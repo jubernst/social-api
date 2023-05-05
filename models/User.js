@@ -1,7 +1,6 @@
 const { Schema, model } = require("mongoose");
+const Thought = require("./Thought");
 
-// Users have thoughts, friend (other users)
-// id, username, email, friendcount, _v?
 const userSchema = new Schema(
   {
     username: {
@@ -12,17 +11,17 @@ const userSchema = new Schema(
     },
     email: {
       type: String,
+      required: true,
       validate: {
+        // Use regex to validate the email
         validator: function (v) {
           return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
         },
       },
-      required: true,
     },
-    friends: [Schema.Types.ObjectId],
-    thoughts: [],
-    friendCount: Number,
-    __v: Number, // no idea what this is for
+    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    thoughts: [Thought],
+    __v: { type: Number, default: 0 },
   },
   {
     toJSON: {
@@ -30,6 +29,13 @@ const userSchema = new Schema(
     },
   }
 );
+
+userSchema
+  .virtual("friendCount")
+  // Getter
+  .get(function () {
+    return this.friends.length;
+  });
 
 const User = model("user", userSchema);
 
