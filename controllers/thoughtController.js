@@ -50,7 +50,7 @@ module.exports = {
       res.status(500).json(err);
     }
   },
-  // update a thought
+  // update a thought by it's id
   async updateThought(req, res) {
     try {
       const thought = await Thought.findOneAndUpdate(
@@ -64,6 +64,32 @@ module.exports = {
       }
 
       res.json(thought);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+  // delete a thought by it's id
+  async deleteThought(req, res) {
+    try {
+      // Delete thought
+      const thought = await Thought.findAndRemove({
+        _id: req.params.thoughtId,
+      });
+
+      if (!thought) {
+        return res.status(404).json({ message: "No thoughts with that id" });
+      }
+
+      // remove thought from user
+      await User.findOneAndUpdate(
+        { thoughts: req.params.thoughtId },
+        { $pull: { thoughts: req.params.thoughtId } },
+        { new: true }
+      );
+
+      res.json({
+        message: "Thought deleted.",
+      });
     } catch (err) {
       res.status(500).json(err);
     }
@@ -87,10 +113,9 @@ module.exports = {
       res.status(500).json(err);
     }
   },
-  // delete a reaction to a thought
+  // delete a reaction to a thought by reactionId
   async removeReaction(req, res) {
     try {
-      // Remove reaction from thought
       const thought = await Thought.findOneAndUpdate(
         { _id: req.params.thoughtId },
         { $pull: { reactions: { _id: req.params.reactionId } } },
@@ -102,32 +127,6 @@ module.exports = {
       }
 
       res.json(thought);
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-  // delete a thought
-  async deleteThought(req, res) {
-    try {
-      // Delete thought
-      const thought = await Thought.findAndRemove({
-        _id: req.params.thoughtId,
-      });
-
-      if (!thought) {
-        return res.status(404).json({ message: "No thoughts with that id" });
-      }
-
-      // remove thought from user
-      await User.findOneAndUpdate(
-        { thoughts: req.params.thoughtId },
-        { $pull: { thoughts: req.params.thoughtId } },
-        { new: true }
-      );
-
-      res.json({
-        message: "Thought deleted.",
-      });
     } catch (err) {
       res.status(500).json(err);
     }
