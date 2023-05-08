@@ -13,7 +13,7 @@ module.exports = {
   // Get a single thought by it's id
   async getSingleThought(req, res) {
     try {
-      // populate thoughts and friends
+      // populate reactions
       const thought = await Thought.findOne({ _id: req.params.thoughtId })
         .select("-__v")
         .populate("reactions");
@@ -28,10 +28,11 @@ module.exports = {
     }
   },
   // create a new thought with associated user
-  // POST body: description, username
+  // POST body: thoughtText, username
   async createThought(req, res) {
     try {
       const thought = await Thought.create(req.body);
+      // Link thought to user
       const user = await User.findOneAndUpdate(
         { username: req.body.username },
         { $addToSet: { thoughts: thought._id } },
@@ -68,7 +69,7 @@ module.exports = {
     }
   },
   // add a reaction to a thought
-  // POST body:
+  // POST body: reactionBody
   async addReaction(req, res) {
     try {
       const thought = await Thought.findOneAndUpdate(

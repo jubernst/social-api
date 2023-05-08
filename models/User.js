@@ -5,17 +5,21 @@ const userSchema = new Schema(
     username: {
       type: String,
       required: true,
-      min: [6, "username too short"],
-      max: [12, "username too long"],
+      unique: true,
+      trim: true,
+      min: [6, "Username too short"],
+      max: [12, "Username too long"],
     },
     email: {
       type: String,
       required: true,
+      unique: true,
       validate: {
         // Use regex to validate the email
         validator: function (v) {
           return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
         },
+        message: (props) => `${props.value} is not a valid email address!`,
       },
     },
     friends: [{ type: Schema.Types.ObjectId, ref: "User" }],

@@ -6,9 +6,9 @@ const reactionSchema = new Schema(
       type: Schema.Types.ObjectId,
       default: () => new Types.ObjectId(),
     },
-    username: { type: String, required: true },
     reactionBody: { type: String, required: true, maxlength: 5 },
-    createdAt: { type: Date, default: Date.now },
+    username: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now, get: formatDate },
   },
   {
     toJSON: {
@@ -17,5 +17,14 @@ const reactionSchema = new Schema(
     id: false,
   }
 );
+
+function formatDate(date) {
+  return date.toLocaleString("en-us", {
+    weekday: "long",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 module.exports = reactionSchema;
