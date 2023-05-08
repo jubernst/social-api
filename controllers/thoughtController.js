@@ -14,7 +14,7 @@ module.exports = {
   async getSingleThought(req, res) {
     try {
       // populate thoughts and friends
-      const thought = await Thought.findOne({ _id: req.params.id })
+      const thought = await Thought.findOne({ _id: req.params.thoughtId })
         .select("-__v")
         .populate("reactions");
 
@@ -40,7 +40,7 @@ module.exports = {
   async updateThought(req, res) {
     try {
       const thought = await Thought.findOneAndUpdate(
-        { _id: req.params.id },
+        { _id: req.params.thoughtId },
         { $set: req.body },
         { runValidators: true, new: true }
       );
@@ -54,10 +54,55 @@ module.exports = {
       res.status(500).json(err);
     }
   },
+  // add a reaction to a thought
+  async addReaction(req, res) {
+    try {
+      // create the reaction
+      const reaction = await Reaction.create(req.body);
+      // add reaction to thought
+      const thought = await Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $addToSet: { reactions: reaction._id } },
+        { runValidators: true, new: true }
+      );
+
+      if (!thought) {
+        return res.status(404).json({ message: "No thoughts with that id" });
+      }
+
+      res.json(thought);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+  // delete a reaction to a thought
+  async removeReaction(req, res) {
+    try {
+      // Remove reaction from thought
+      const thought = await Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $pull: { reactions: { _id: req.body.reactionId } } },
+        { runValidators: true, new: true }
+      );
+
+      if (!thought) {
+        return res.status(404).json({ message: "No thoughts with that id" });
+      }
+
+      // Delete reaction
+      await Reaction.findByIdAndDelete(req.body.reactionId);
+
+      res.json(thought);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
   // delete a thought and it's reactions
   async deleteThought(req, res) {
     try {
-      const thought = await Thought.findAndRemove({ _id: req.params.id });
+      const thought = await Thought.findAndRemove({
+        _id: req.params.thoughtId,
+      });
 
       if (!thought) {
         return res.status(404).json({ message: "No thoughts with that id" });
@@ -66,6 +111,7 @@ module.exports = {
       await Reaction.deleteMany({
         _id: { $in: thought.reactions },
       });
+
       res.json({
         message: "Thought and associated reactions deleted.",
       });

@@ -29,7 +29,7 @@ module.exports = {
     }
   },
   // create a new user
-  // POST body:
+  // POST body: username, email
   async createUser(req, res) {
     try {
       const user = await User.create(req.body);
@@ -61,11 +61,11 @@ module.exports = {
     try {
       const user = await User.findOneAndUpdate(
         { _id: req.params.userId },
-        { $addToSet: { friends: req.body } },
+        { $addToSet: { friends: req.params.friendId } },
         { runValidators: true, new: true }
       );
 
-      if (!user) {
+      if (!user || !friend) {
         return res.status(404).json({ message: "No user with that id" });
       }
 
@@ -79,7 +79,7 @@ module.exports = {
     try {
       const user = await User.findOneAndUpdate(
         { _id: req.params.userId },
-        { $pull: { friends: { _id: req.params.userId } } },
+        { $pull: { friends: { _id: req.params.friendId } } },
         { runValidators: true, new: true }
       );
 
