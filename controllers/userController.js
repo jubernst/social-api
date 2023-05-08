@@ -1,4 +1,4 @@
-const { User, Thought, Reaction } = require("../models");
+const { User, Thought } = require("../models");
 
 module.exports = {
   // get all users
@@ -13,8 +13,11 @@ module.exports = {
   // get a single user by id
   async getSingleUser(req, res) {
     try {
-      const user = await User.findOne({ _id: req.params.id }).select("-__v");
-      // want to get the users thoughts as well
+      // populate thoughts and friends
+      const user = await User.findOne({ _id: req.params.userId })
+        .select("-__v")
+        .populate("thoughts")
+        .populate("friends");
 
       if (!user) {
         return res.status(404).json({ message: "No user with that id" });
@@ -26,6 +29,7 @@ module.exports = {
     }
   },
   // create a new user
+  // POST body:
   async createUser(req, res) {
     try {
       const user = await User.create(req.body);
@@ -88,7 +92,7 @@ module.exports = {
       res.status(500).json(err);
     }
   },
-  // delete a user and associated thoughts + reactions
+  // delete a user and associated thoughts
   async deleteUser(req, res) {
     try {
       const user = await User.findAndRemove({ _id: req.params.userId });
