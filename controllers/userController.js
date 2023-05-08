@@ -80,18 +80,25 @@ module.exports = {
   // add friend
   async addFriend(req, res) {
     try {
+      const friend = await User.findById(req.params.friendId);
+
+      if (!friend) {
+        return res.status(404).json({ message: "No friend with that id" });
+      }
+
       const user = await User.findOneAndUpdate(
         { _id: req.params.userId },
         { $addToSet: { friends: req.params.friendId } },
         { runValidators: true, new: true }
       );
 
-      if (!user || !friend) {
+      if (!user) {
         return res.status(404).json({ message: "No user with that id" });
       }
 
       res.json(user);
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   },
@@ -100,7 +107,7 @@ module.exports = {
     try {
       const user = await User.findOneAndUpdate(
         { _id: req.params.userId },
-        { $pull: { friends: { _id: req.params.friendId } } },
+        { $pull: { friends: req.params.friendId } },
         { runValidators: true, new: true }
       );
 
