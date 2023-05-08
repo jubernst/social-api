@@ -1,4 +1,4 @@
-const { User, Thought, Reaction } = require("../models");
+const { User, Thought } = require("../models");
 
 module.exports = {
   // Get all thoughts
@@ -28,18 +28,19 @@ module.exports = {
     }
   },
   // create a new thought with associated user
+  // POST body: description, username
   async createThought(req, res) {
     try {
       const thought = await Thought.create(req.body);
       const user = await User.findOneAndUpdate(
-        { _id: req.body.userId },
+        { username: req.body.username },
         { $addToSet: { thoughts: thought._id } },
         { new: true }
       );
 
       if (!user) {
         return res.status(404).json({
-          message: "Thought created, but found no user with that ID",
+          message: "Thought created, but found no user with that username",
         });
       }
 
@@ -67,6 +68,7 @@ module.exports = {
     }
   },
   // add a reaction to a thought
+  // POST body:
   async addReaction(req, res) {
     try {
       const thought = await Thought.findOneAndUpdate(
