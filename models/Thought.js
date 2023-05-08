@@ -5,9 +5,9 @@ const thoughtSchema = new Schema(
   {
     username: String,
     body: String,
+    postedBy: { type: Schema.Types.ObjectId, ref: "User" },
     createdAt: { type: Date, default: Date.now },
     reactions: [Reaction],
-    reactionCount: Number,
   },
   {
     toJSON: {

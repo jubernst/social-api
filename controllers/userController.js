@@ -52,14 +52,43 @@ module.exports = {
       res.status(500).json(err);
     }
   },
-  // add and remove friends ..?
-  async addFriend(req, res){
+  // add friend
+  async addFriend(req, res) {
     try {
-        const user = await User.findOneAndUpdate({_id: req.params.userId}, {$addTo})
+      const user = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $addToSet: { friends: req.body } },
+        { runValidators: true, new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: "No user with that id" });
+      }
+
+      res.json(user);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+  // remove friend
+  async removeFriend(req, res) {
+    try {
+      const user = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $pull: { friends: { _id: req.params.userId } } },
+        { runValidators: true, new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: "No user with that id" });
+      }
+
+      res.json(user);
+    } catch (err) {
+      res.status(500).json(err);
     }
   },
   // delete a user and associated thoughts + reactions
-  // should also delete from friend lists, and subtract from friendcount
   async deleteUser(req, res) {
     try {
       const user = await User.findAndRemove({ _id: req.params.userId });
@@ -68,12 +97,17 @@ module.exports = {
         return res.status(404).json({ message: "No user with that id" });
       }
 
-      await Thought.deleteMany({ _id: { $in: user.thoughts } });
-      // filter users who have requested user in their friends
-      // the array is made of ids
-      await User.updateMany({friends: user});
+      await Thought.deleteMany({
+        _id: { $in: user.thoughts },
+      });
+      // filter users who have requested user in their friends list
+      // await User.updateMany(
+      //   { friends: { _id: req.params.userId } },
+      //   { $pull: { "friends.$": { _id: req.params.userId } } },
+      //   { runValidators: true, new: true }
+      // );
       res.json({
-        message: "User and associated thoughts deleted. ",
+        message: "User and associated thoughts deleted.",
       });
     } catch (err) {
       res.status(500).json(err);
