@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-// may need to import reactionSchema
+const reaction = require("./Reaction");
 
 const thoughtSchema = new Schema(
   {
@@ -7,11 +7,11 @@ const thoughtSchema = new Schema(
       type: String,
       required: true,
       minLength: 1,
-      maxLength: 280,
+      maxLength: [280, "You can only use 280 characters"],
     },
     username: { type: String, required: true },
     createdAt: { type: Date, default: Date.now, get: formatDate },
-    reactions: [{ type: Schema.Types.ObjectId, ref: "Reaction" }],
+    reactions: [reaction],
   },
   {
     toJSON: {
@@ -27,6 +27,8 @@ function formatDate(date) {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
   });
 }
 

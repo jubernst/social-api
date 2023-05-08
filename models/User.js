@@ -7,8 +7,8 @@ const userSchema = new Schema(
       required: true,
       unique: true,
       trim: true,
-      min: [6, "Username too short"],
-      max: [12, "Username too long"],
+      minlength: [4, "Username too short"],
+      maxlength: [12, "Username too long"],
     },
     email: {
       type: String,
@@ -22,8 +22,8 @@ const userSchema = new Schema(
         message: (props) => `${props.value} is not a valid email address!`,
       },
     },
-    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    thoughts: [{ type: Schema.Types.ObjectId, ref: "Thought" }],
+    friends: [{ type: Schema.Types.ObjectId, ref: "user" }],
+    thoughts: [{ type: Schema.Types.ObjectId, ref: "thought" }],
   },
   {
     toJSON: {
